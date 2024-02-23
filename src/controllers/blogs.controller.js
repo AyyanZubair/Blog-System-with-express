@@ -4,6 +4,7 @@ import { verifyToken } from "../service/auth.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiErrors } from "../utils/ApiErrors.js";
 import { userModel } from "../models/users.model.js";
+import { LikesModel } from "../models/likes.model.js";
 
 const createBlog = asyncHandler(async (req, res) => {
     try {
@@ -110,4 +111,18 @@ const getMyBlogs = asyncHandler(async (req, res) => {
     res.send(new ApiResponse(200, myBlogs, "here is your blogs"))
 })
 
-export { createBlog, deleteBlog, updateBlog, findAllBlogs, getMyBlogs }
+const totalLikesOnBlog = asyncHandler(async (req, res) => {
+    const { blog_id } = req.body;
+    if (!blog_id) return res.send(new ApiErrors(400, {}, "blog_id is required to finda total likes on blog"))
+    const token = req.headers["authorization"].split("Bearer ")[1]
+    if (!token) return res.send(new ApiErrors(400, {}, "token not found"))
+    const verify_Token = await verifyToken(token);
+    if (!verify_Token) return res.send(new ApiErrors(400, {}, "token is wrong, invalid signature"))
+    const existingBlog = await blogModel.findOne({ _id: new Object(blog_id) })
+    if (!existingBlog) return res.send(new ApiErrors(400, {}, "blog not exist"))
+    const blog = await LikesModel.findOne({ blog_id })
+    const totalLikes = blog.user_ids.length
+    res.send(new ApiResponse(200, {}, `total likes on blog are: ${totalLikes}`))
+})
+
+export { createBlog, deleteBlog, updateBlog, findAllBlogs, getMyBlogs, totalLikesOnBlog }
