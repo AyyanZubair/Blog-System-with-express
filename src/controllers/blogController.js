@@ -70,7 +70,6 @@ const findAllBlogs = async (req, res) => {
             const allBlogs = await blogModel.find({});
             return res.send(new ApiResponse(200, allBlogs, "All blogs are fetched successfully"));
         } else {
-            // Use the 'user_id' field to query the user's blogs
             const userBlogs = await blogModel.find({ user_id: userId });
             return res.send(new ApiResponse(200, userBlogs, "Blogs created by the user are fetched successfully"));
         }
